@@ -1,0 +1,59 @@
+---
+
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
+	</head>
+	<body>
+		<h1>Astro</h1>
+		<script>
+			document.addEventListener('submit', (event) => {
+				const form = event.target;
+
+				if (!(form instanceof HTMLFormElement) || !form.matches('[data-checkout]')) return;
+
+				event.preventDefault();
+
+				const nameInput = form.querySelector('[data-customer-name]');
+				const name = nameInput instanceof HTMLInputElement ? nameInput.value.trim() : '';
+				const notification = document.createElement('div');
+				notification.setAttribute('role', 'status');
+				notification.setAttribute('aria-live', 'polite');
+				notification.textContent = `Grazie${name ? ` ${name}` : ''}, il tuo ordine simulato è stato elaborato con successo`;
+
+				Object.assign(notification.style, {
+					position: 'fixed',
+					left: '50%',
+					bottom: '24px',
+					transform: 'translate(-50%, 20px)',
+					padding: '16px 24px',
+					borderRadius: '8px',
+					background: '#166534',
+					color: '#fff',
+					boxShadow: '0 4px 16px #0003',
+					opacity: '0',
+					transition: 'opacity 200ms ease, transform 200ms ease',
+					zIndex: '9999',
+				});
+
+				document.body.append(notification);
+				requestAnimationFrame(() => {
+					notification.style.opacity = '1';
+					notification.style.transform = 'translate(-50%, 0)';
+				});
+				window.setTimeout(() => {
+					notification.style.opacity = '0';
+					notification.style.transform = 'translate(-50%, 20px)';
+					window.setTimeout(() => notification.remove(), 200);
+				}, 5000);
+			});
+		</script>
+	</body>
+</html>
