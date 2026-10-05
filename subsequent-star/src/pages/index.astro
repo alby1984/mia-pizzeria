@@ -1,59 +1,365 @@
 ---
-
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-		<script>
-			document.addEventListener('submit', (event) => {
-				const form = event.target;
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Pizzeria Mia</title>
+    <style>
+      :root {
+        --bg: #fffaf3;
+        --panel: #ffffff;
+        --primary: #b42318;
+        --primary-dark: #7a120d;
+        --accent: #f59e0b;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --shadow: 0 12px 30px rgba(31, 41, 55, 0.12);
+      }
 
-				if (!(form instanceof HTMLFormElement) || !form.matches('[data-checkout]')) return;
+      * { box-sizing: border-box; }
 
-				event.preventDefault();
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
 
-				const nameInput = form.querySelector('[data-customer-name]');
-				const name = nameInput instanceof HTMLInputElement ? nameInput.value.trim() : '';
-				const notification = document.createElement('div');
-				notification.setAttribute('role', 'status');
-				notification.setAttribute('aria-live', 'polite');
-				notification.textContent = `Grazie${name ? ` ${name}` : ''}, il tuo ordine simulato è stato elaborato con successo`;
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(31, 41, 55, 0.08);
+      }
 
-				Object.assign(notification.style, {
-					position: 'fixed',
-					left: '50%',
-					bottom: '24px',
-					transform: 'translate(-50%, 20px)',
-					padding: '16px 24px',
-					borderRadius: '8px',
-					background: '#166534',
-					color: '#fff',
-					boxShadow: '0 4px 16px #0003',
-					opacity: '0',
-					transition: 'opacity 200ms ease, transform 200ms ease',
-					zIndex: '9999',
-				});
+      .topbar-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-				document.body.append(notification);
-				requestAnimationFrame(() => {
-					notification.style.opacity = '1';
-					notification.style.transform = 'translate(-50%, 0)';
-				});
-				window.setTimeout(() => {
-					notification.style.opacity = '0';
-					notification.style.transform = 'translate(-50%, 20px)';
-					window.setTimeout(() => notification.remove(), 200);
-				}, 5000);
-			});
-		</script>
-	</body>
+      .brand {
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--primary-dark);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .nav a {
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .order-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      #cart-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.5rem;
+        height: 1.5rem;
+        padding: 0 0.38rem;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1;
+        opacity: 0;
+        transform: scale(0.7);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+
+      #cart-count.visible {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 6rem;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #fff5e6, #ffe7cc);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+      }
+
+      .hero h1 {
+        margin: 0 0 0.75rem;
+        font-size: clamp(2rem, 4vw, 3.5rem);
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 620px;
+        color: var(--muted);
+        font-size: 1.05rem;
+      }
+
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+      }
+
+      .pizza-card {
+        background: var(--panel);
+        border-radius: 18px;
+        padding: 1.25rem;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(17, 24, 39, 0.05);
+      }
+
+      .pizza-card h2 {
+        margin: 0 0 0.4rem;
+        font-size: 1.3rem;
+      }
+
+      .pizza-card .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--muted);
+        margin-bottom: 1rem;
+      }
+
+      .price {
+        font-weight: 700;
+        color: var(--primary-dark);
+      }
+
+      .pizza-card p {
+        color: var(--muted);
+        margin: 0 0 1rem;
+        min-height: 3.2em;
+      }
+
+      .add-button {
+        display: inline-block;
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 0.8rem 1rem;
+        cursor: pointer;
+        transition: transform 0.15s ease, background 0.15s ease;
+      }
+
+      .add-button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+      }
+
+      .cart-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(17, 24, 39, 0.96);
+        color: #fff;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .cart-content {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .cart-total {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .cart-action {
+        background: #fff;
+        color: #111827;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.75rem 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      @media (max-width: 560px) {
+        .topbar-inner,
+        .cart-content {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">Mia Pizzeria</div>
+        <nav class="nav" aria-label="Menu principale">
+          <a href="#menu">Menu</a>
+          <a href="#ordina" class="order-link">
+            <span>Ordina</span>
+            <span id="cart-count" aria-live="polite" aria-label="Prodotti nel carrello">0</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>Le pizze della serata</h1>
+        <p>Ingredienti freschi, impasto soffice e un servizio veloce per portare a casa il sapore della vera pizzeria.</p>
+      </section>
+
+      <section id="menu" aria-label="Menu pizze">
+        <div class="menu-grid">
+          <article class="pizza-card">
+            <h2>Margherita</h2>
+            <div class="meta"><span>Classica</span><span class="price">€ 8,50</span></div>
+            <p>Pomodoro, mozzarella, basilico fresco e olio extravergine.</p>
+            <button class="add-button" type="button" data-price="8.5">Aggiungi all'ordine</button>
+          </article>
+
+          <article class="pizza-card">
+            <h2>Diavola</h2>
+            <div class="meta"><span>Piccante</span><span class="price">€ 10,00</span></div>
+            <p>Pomodoro, mozzarella, salame piccante e peperoncino.</p>
+            <button class="add-button" type="button" data-price="10">Aggiungi all'ordine</button>
+          </article>
+
+          <article class="pizza-card">
+            <h2>Quattro Formaggi</h2>
+            <div class="meta"><span>Crema</span><span class="price">€ 11,50</span></div>
+            <p>Mozzarella, gorgonzola, parmigiano e pecorino.</p>
+            <button class="add-button" type="button" data-price="11.5">Aggiungi all'ordine</button>
+          </article>
+
+          <article class="pizza-card">
+            <h2>Prosciutto e funghi</h2>
+            <div class="meta"><span>Rustica</span><span class="price">€ 12,00</span></div>
+            <p>Pomodoro, mozzarella, prosciutto cotto e funghi freschi.</p>
+            <button class="add-button" type="button" data-price="12">Aggiungi all'ordine</button>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div class="cart-bar" id="ordina">
+      <div class="cart-content">
+        <div class="cart-total">Totale: € <span id="cart-total">0,00</span></div>
+        <button class="cart-action" type="button">Conferma ordine</button>
+      </div>
+    </div>
+
+    <script>
+      const cartCountEl = document.getElementById('cart-count');
+      const cartTotalEl = document.getElementById('cart-total');
+      let cartCount = 0;
+      let cartTotal = 0;
+
+      function formatPrice(value) {
+        return new Intl.NumberFormat('it-IT', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(value);
+      }
+
+      function updateCartBadge() {
+        if (!cartCountEl) return;
+
+        cartCountEl.textContent = String(cartCount);
+        cartCountEl.classList.toggle('visible', cartCount > 0);
+      }
+
+      function updateCartTotal() {
+        if (!cartTotalEl) return;
+        cartTotalEl.textContent = formatPrice(cartTotal);
+      }
+
+      document.addEventListener('click', (event) => {
+        const button = event.target.closest('.add-button');
+
+        if (!button) return;
+
+        const price = Number(button.dataset.price || 0);
+        cartCount += 1;
+        cartTotal += price;
+
+        updateCartBadge();
+        updateCartTotal();
+      });
+
+      document.addEventListener('submit', (event) => {
+        const form = event.target;
+
+        if (!(form instanceof HTMLFormElement) || !form.matches('[data-checkout]')) return;
+
+        event.preventDefault();
+
+        const nameInput = form.querySelector('[data-customer-name]');
+        const name = nameInput instanceof HTMLInputElement ? nameInput.value.trim() : '';
+        const notification = document.createElement('div');
+        notification.setAttribute('role', 'status');
+        notification.setAttribute('aria-live', 'polite');
+        notification.textContent = `Grazie${name ? ` ${name}` : ''}, il tuo ordine simulato è stato elaborato con successo`;
+
+        Object.assign(notification.style, {
+          position: 'fixed',
+          left: '50%',
+          bottom: '24px',
+          transform: 'translate(-50%, 20px)',
+          padding: '16px 24px',
+          borderRadius: '8px',
+          background: '#166534',
+          color: '#fff',
+          boxShadow: '0 4px 16px #0003',
+          opacity: '0',
+          transition: 'opacity 200ms ease, transform 200ms ease',
+          zIndex: '9999',
+        });
+
+        document.body.append(notification);
+        requestAnimationFrame(() => {
+          notification.style.opacity = '1';
+          notification.style.transform = 'translate(-50%, 0)';
+        });
+
+        window.setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transform = 'translate(-50%, 20px)';
+          window.setTimeout(() => notification.remove(), 200);
+        }, 5000);
+      });
+    </script>
+  </body>
 </html>
